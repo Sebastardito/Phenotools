@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Larvae Growth Curve</title>
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .form-panels {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px; /* Espacio entre los paneles */
+        }
+
+        .form-panel {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            flex: 1; /* Hace que los paneles se expandan para ocupar el espacio disponible */
+        }
+
+        .form-panel h2 {
+            margin-top: 0;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Select Options</h1>
+        <form action="/" method="post">
+            <div class="form-panels">
+                <div class="form-panel">
+                    <h2>Populations</h2>
+                    <div class="form-group">
+                        {% for population in populations | sort %}
+                            <input type="checkbox" id="{{ population }}" name="population" value="{{ population }}"
+                                   {% if population in selected_populations %} checked {% endif %}>
+                            <label for="{{ population }}">{{ population }}</label><br>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="form-panel">
+                    <h2>Cycles</h2>
+                    <div class="form-group">
+                        {% for cycle in cycles | sort %}
+                            <input type="checkbox" id="cycle{{ cycle }}" name="cycle" value="{{ cycle }}"
+                                   {% if cycle in selected_cycles %} checked {% endif %}>
+                            <label for="cycle{{ cycle }}">{{ cycle }}</label><br>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="form-panel">
+                    <h2>Groups</h2>
+                    <div class="form-group">
+                        {% for group in groups | sort %}
+                            <input type="checkbox" id="{{ group }}" name="group" value="{{ group }}"
+                                   {% if group in selected_groups %} checked {% endif %}>
+                            <label for="{{ group }}">{{ group }}</label><br>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="form-panel">
+                    <h2>Variable</h2>
+                    <div class="form-group">
+                        <select id="variable" name="variable">
+                            {% for variable in variables %}
+                                <option value="{{ variable }}" {% if variable == selected_variable %} selected {% endif %}>{{ variable }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Generate Plot</button>
+        </form>
+        {% if plot_url %}
+            <img src="data:image/png;base64,{{ plot_url }}" alt="Plot">
+        {% endif %}
+    </div>
+</body>
+</html>
