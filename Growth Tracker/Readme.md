@@ -9,7 +9,7 @@ The CSV file used as input for the script must follow a specific format to ensur
 1. **CSV File Structure**: The CSV file should have a table structure where each row represents a unique observation of an insect at a specific moment in its life cycle. The columns should include at least the following:
 
     - **Population**: Unique identifier of the insect population to which the individual belongs.
-    - **Cycle**: Specific phase of the insect's life cycle (e.g., egg, larva, pupa, adult).
+    - **Cycle**: As reference of generation number.
     - **Group**: Group to which the individual belongs within the population (e.g., control group, experimental group).
     - **Phenotypic Variables**: Additional columns for the phenotypic variables being recorded (e.g., weight, length, area, etc.).
     - **Age**: Age of the individual insect in days.
