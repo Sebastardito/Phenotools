@@ -1,0 +1,1853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Larvae Growth Analysis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Light theme */
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --bg-header: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #495057;
+            --accent-primary: #ff7b00;
+            --accent-secondary: #28a745;
+            --accent-tertiary: #dc3545;
+            --border-color: #dee2e6;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --gradient: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            
+            /* Chart colors */
+            --chart-blue: #1e88e5;
+            --chart-green: #43a047;
+            --chart-orange: #ff7b00;
+            --chart-red: #e53935;
+            --chart-purple: #8e24aa;
+        }
+
+        .dark-theme {
+            /* Dark theme */
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-card: #252525;
+            --bg-header: #1a1a1a;
+            --text-primary: #f8f9fa;
+            --text-secondary: #adb5bd;
+            --accent-primary: #ff9e4a;
+            --accent-secondary: #4ade80;
+            --accent-tertiary: #f87171;
+            --border-color: #444;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            --gradient: radial-gradient(circle, rgba(40,40,40,0.3) 0%, rgba(0,0,0,0) 70%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            background-image: var(--gradient);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header Styles */
+        .app-header {
+            background: var(--bg-header);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .theme-toggle {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            box-shadow: var(--shadow);
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-secondary);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            flex: 1;
+            width: 100%;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            background: linear-gradient(to right, var(--bg-header), var(--bg-card));
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-header i {
+            font-size: 1.5rem;
+            color: var(--accent-primary);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Form Styles */
+        .form-panels {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-panel {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .panel-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .panel-title h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .toggle-all {
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: var(--accent-primary);
+            font-weight: 500;
+        }
+
+        .toggle-all:hover {
+            text-decoration: underline;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-check {
+            margin: 0.75rem 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-check-label {
+            margin-left: 0.5rem;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        select.form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .btn {
+            background: linear-gradient(to right, var(--accent-primary), #ff9e4a);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            cursor: pointer;
+            border-radius: 8px;
+            margin-top: 1rem;
+            width: 100%;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s;
+            box-shadow: 0 4px 8px rgba(255, 123, 0, 0.2);
+        }
+
+        .btn:hover {
+            background: linear-gradient(to right, #e56e00, #ff8c2a);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(255, 123, 0, 0.3);
+        }
+
+        /* Plot Styles */
+        .plot-container {
+            position: relative;
+            min-height: 500px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .plot-container img {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            display: none;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid var(--accent-primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Stats and Tables */
+        .stats-title {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--accent-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .stats-title i {
+            color: var(--accent-primary);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            margin: 1.5rem 0;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .stats-table th {
+            background: linear-gradient(to right, var(--accent-primary), #ff9e4a);
+            color: white;
+            text-align: left;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            font-weight: 600;
+        }
+
+        .stats-table td {
+            padding: 0.9rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .stats-table tr:nth-child(even) {
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+
+        .dark-theme .stats-table tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .stats-table tr:hover {
+            background-color: rgba(255, 123, 0, 0.08);
+        }
+
+        .stats-summary {
+            background: var(--bg-secondary);
+            padding: 1.25rem;
+            border-radius: 10px;
+            margin-top: 1.5rem;
+            border-left: 4px solid var(--accent-primary);
+            font-size: 0.95rem;
+        }
+
+        .no-stats {
+            color: var(--text-secondary);
+            font-style: italic;
+            padding: 2rem;
+            text-align: center;
+            border: 1px dashed var(--border-color);
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            background: var(--bg-secondary);
+        }
+
+        /* Badge Styles */
+        .correlation-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-left: 0.5rem;
+        }
+
+        .positive-correlation {
+            background-color: rgba(40, 167, 69, 0.15);
+            color: var(--accent-secondary);
+        }
+
+        .negative-correlation {
+            background-color: rgba(220, 53, 69, 0.15);
+            color: var(--accent-tertiary);
+        }
+
+        .trend-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .strong-trend {
+            background: rgba(30, 136, 229, 0.15);
+            color: var(--chart-blue);
+        }
+
+        .moderate-trend {
+            background: rgba(67, 160, 71, 0.15);
+            color: var(--chart-green);
+        }
+
+        .weak-trend {
+            background: rgba(142, 36, 170, 0.15);
+            color: var(--chart-purple);
+        }
+
+        .significance-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 0.5rem;
+        }
+
+        .significant {
+            background-color: var(--accent-secondary);
+        }
+
+        .not-significant {
+            background-color: var(--accent-tertiary);
+        }
+
+        .growth-indicator {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .high-growth {
+            background-color: var(--accent-secondary);
+            color: white;
+        }
+
+        .medium-growth {
+            background-color: var(--accent-primary);
+            color: white;
+        }
+
+        .low-growth {
+            background-color: var(--accent-tertiary);
+            color: white;
+        }
+
+        /* Analysis Grid */
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .analysis-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .analysis-card h3 {
+            margin-top: 0;
+            color: var(--accent-primary);
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .analysis-plot {
+            text-align: center;
+            margin-top: 1rem;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .analysis-plot img {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+        }
+
+        .tukey-results {
+            background: var(--bg-secondary);
+            padding: 1.25rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        .app-footer {
+            background: linear-gradient(to right, #121212, #1e1e1e);
+            color: #f8f9fa;
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            margin-top: 3rem;
+        }
+
+        .footer-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .signature {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+        }
+
+        .copyright {
+            font-size: 0.9rem;
+            color: #adb5bd;
+        }
+
+        .footer-gradient {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(255, 123, 0, 0.2) 0%, rgba(255, 123, 0, 0) 70%);
+            z-index: 1;
+        }
+
+        /* Empty states */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--accent-primary);
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .empty-state p {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* New Styles for Reorganized Sections */
+        .section-title {
+            font-size: 1.8rem;
+            margin: 2rem 0 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--accent-primary);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .section-title i {
+            color: var(--accent-primary);
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+
+        .stat-card h3 {
+            margin-top: 0;
+            color: var(--accent-primary);
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .hypothesis-test-results {
+            background: var(--bg-secondary);
+            padding: 1.25rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            border-left: 4px solid var(--chart-purple);
+            font-size: 0.95rem;
+        }
+
+        .correlation-matrix-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Table-only sections */
+        .table-section {
+            margin-top: 1.5rem;
+        }
+        
+        /* PDF Report Button */
+        .report-btn-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="app-header">
+        <div class="logo-container">
+            <div class="logo">
+                <i class="fas fa-seedling"></i>
+            </div>
+            <div class="logo-text">LarvaeTracker</div>
+        </div>
+        <div class="theme-toggle" id="theme-toggle">
+            <i class="fas fa-moon"></i>
+            <span>Dark Mode</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-cogs"></i>
+                <h1 class="card-title">Larvae Growth Analysis Dashboard</h1>
+            </div>
+            <div class="card-body">
+                <div class="form-panels">
+                    <!-- Populations Panel -->
+                    <div class="form-panel">
+                        <div class="panel-title">
+                            <h2>Populations</h2>
+                            <span class="toggle-all" onclick="toggleAll('population-checkbox')">
+                                Toggle All
+                            </span>
+                        </div>
+                        <div class="form-group">
+                            {% for population in populations | sort %}
+                            <div class="form-check">
+                                <input class="population-checkbox" type="checkbox" 
+                                       id="pop-{{ population }}" name="population" 
+                                       value="{{ population }}">
+                                <label class="form-check-label" for="pop-{{ population }}">
+                                    {{ population }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Cycles Panel -->
+                    <div class="form-panel">
+                        <div class="panel-title">
+                            <h2>Cycles</h2>
+                            <span class="toggle-all" onclick="toggleAll('cycle-checkbox')">
+                                Toggle All
+                            </span>
+                        </div>
+                        <div class="form-group">
+                            {% for cycle in cycles | sort %}
+                            <div class="form-check">
+                                <input class="cycle-checkbox" type="checkbox" 
+                                       id="cycle-{{ cycle }}" name="cycle" 
+                                       value="{{ cycle }}">
+                                <label class="form-check-label" for="cycle-{{ cycle }}">
+                                    {{ cycle }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Groups Panel -->
+                    <div class="form-panel">
+                        <div class="panel-title">
+                            <h2>Groups</h2>
+                            <span class="toggle-all" onclick="toggleAll('group-checkbox')">
+                                Toggle All
+                            </span>
+                        </div>
+                        <div class="form-group">
+                            {% for group in groups | sort %}
+                            <div class="form-check">
+                                <input class="group-checkbox" type="checkbox" 
+                                       id="group-{{ group }}" name="group" 
+                                       value="{{ group }}">
+                                <label class="form-check-label" for="group-{{ group }}">
+                                    {{ group }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Settings Panel -->
+                    <div class="form-panel">
+                        <div class="panel-title">
+                            <h2>Analysis Settings</h2>
+                        </div>
+                        <div class="form-group">
+                            <label>Variable:</label>
+                            <select name="variable" class="form-control">
+                                {% for variable in variables %}
+                                <option value="{{ variable }}">
+                                    {{ variable }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Standard Deviations:</label>
+                            <select name="num_std" class="form-control">
+                                {% for std in std_options %}
+                                <option value="{{ std }}" {% if std == selected_std %}selected{% endif %}>
+                                    {% if std == 0 %}None{% else %}{{ std }}{% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input type="checkbox" name="show_annotations" 
+                                   id="show_annotations" class="form-check-input" {% if show_annotations %}checked{% endif %}>
+                            <label class="form-check-label" for="show_annotations">
+                                Show Last Point Annotations
+                            </label>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input type="checkbox" name="show_correlations" 
+                                   id="show_correlations" class="form-check-input" {% if show_correlations %}checked{% endif %}>
+                            <label class="form-check-label" for="show_correlations">
+                                Show Correlation Analysis
+                            </label>
+                        </div>
+                        
+                        <button class="btn" onclick="updatePlot()">
+                            <i class="fas fa-sync-alt"></i> Update Analysis
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Growth Visualization -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-line"></i>
+                <h2 class="card-title">Growth Visualization</h2>
+            </div>
+            <div class="card-body">
+                <div class="plot-container">
+                    <div class="loading-overlay" id="loading-overlay">
+                        <div class="spinner"></div>
+                        <div class="loading-text">Processing data...</div>
+                    </div>
+                    <!-- Plot will be inserted here -->
+                </div>
+                <div class="report-btn-container">
+                    <button class="btn" onclick="generatePDFReport()">
+                        <i class="fas fa-file-pdf"></i> Download PDF Report
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Descriptive Statistics -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-table"></i>
+                <h2 class="card-title">Descriptive Statistics</h2>
+            </div>
+            <div class="card-body">
+                <div id="stats-container" class="stats-container">
+                    <div class="empty-state">
+                        <i class="fas fa-table"></i>
+                        <h3>No Data Available</h3>
+                        <p>Select populations, cycles, and groups to see descriptive statistics.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparative Analysis -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-balance-scale"></i>
+                <h2 class="card-title">Comparative Analysis</h2>
+            </div>
+            <div class="card-body">
+                <div class="table-section">
+                    <div class="analysis-card">
+                        <h3><i class="fas fa-exchange-alt"></i> Comparative Analysis</h3>
+                        <div id="comparative-container">
+                            <div class="empty-state">
+                                <i class="fas fa-exchange-alt"></i>
+                                <h3>No Comparative Data</h3>
+                                <p>Select at least two items to see comparative analysis.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-card">
+                        <h3><i class="fas fa-tachometer-alt"></i> Daily Growth Analysis</h3>
+                        <div id="daily-growth-container">
+                            <div class="empty-state">
+                                <i class="fas fa-tachometer-alt"></i>
+                                <h3>No Daily Growth Data</h3>
+                                <p>Select groups to see daily growth analysis.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="analysis-grid">
+                    <div class="analysis-card">
+                        <h3><i class="fas fa-chart-area"></i> Comparative Visualization</h3>
+                        <div id="comparative-plot-container" class="analysis-plot">
+                            <div class="empty-state">
+                                <i class="fas fa-chart-area"></i>
+                                <h3>No Comparative Visualization</h3>
+                                <p>Select groups to generate comparative visualizations.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Correlation & Trend Analysis -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-chart-bar"></i>
+                <h2 class="card-title">Correlation & Trend Analysis</h2>
+            </div>
+            <div class="card-body">
+                <div class="table-section">
+                    <div class="analysis-card">
+                        <h3><i class="fas fa-link"></i> Correlations</h3>
+                        <div id="correlation-container">
+                            <div class="empty-state">
+                                <i class="fas fa-link"></i>
+                                <h3>No Correlation Data</h3>
+                                <p>Select at least two items to see correlation analysis.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-card">
+                        <h3><i class="fas fa-chart-line"></i> Growth Trends</h3>
+                        <div id="trend-container">
+                            <div class="empty-state">
+                                <i class="fas fa-chart-line"></i>
+                                <h3>No Trend Data</h3>
+                                <p>Select groups to see growth trend analysis.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="analysis-grid">
+                    <div class="analysis-card">
+                        <h3><i class="fas fa-th"></i> Correlation Matrix</h3>
+                        <div id="correlation-plot-container" class="analysis-plot">
+                            <div class="empty-state">
+                                <i class="fas fa-th"></i>
+                                <h3>No Correlation Matrix</h3>
+                                <p>Select groups to generate a correlation matrix.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-card">
+                        <h3><i class="fas fa-project-diagram"></i> Trend Visualization</h3>
+                        <div id="trend-plot-container" class="analysis-plot">
+                            <div class="empty-state">
+                                <i class="fas fa-project-diagram"></i>
+                                <h3>No Trend Visualization</h3>
+                                <p>Select groups to visualize growth trends.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistical Analysis -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-flask"></i>
+                <h2 class="card-title">Statistical Analysis</h2>
+            </div>
+            <div class="card-body">
+                <div class="table-section">
+                    <div class="analysis-card">
+                        <h3><i class="fas fa-calculator"></i> Post-hoc Analysis (Tukey HSD)</h3>
+                        <div id="tukey-container">
+                            <div class="empty-state">
+                                <i class="fas fa-calculator"></i>
+                                <h3>No Statistical Analysis</h3>
+                                <p>Select groups to perform statistical analysis.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="analysis-card">
+                        <h3><i class="fas fa-brain"></i> Advanced Statistical Analysis</h3>
+                        <div id="advanced-stats-container">
+                            <div class="empty-state">
+                                <i class="fas fa-brain"></i>
+                                <h3>No Advanced Analysis</h3>
+                                <p>Select groups to see advanced statistical analysis.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analysis-card">
+                        <h3><i class="fas fa-project-diagram"></i> Hypothesis Testing Results</h3>
+                        <div id="hypothesis-container">
+                            <div class="empty-state">
+                                <i class="fas fa-project-diagram"></i>
+                                <h3>No Hypothesis Tests</h3>
+                                <p>Select groups to see hypothesis testing results.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="app-footer">
+        <div class="footer-gradient"></div>
+        <div class="footer-content">
+            <div class="signature">Developed by Sebastardito! – SAEU 2025</div>
+            <div class="copyright">Larvae Growth Analysis Platform v2.0</div>
+        </div>
+    </footer>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = themeToggle.querySelector('i');
+        const themeText = themeToggle.querySelector('span');
+        
+        // Check for saved theme preference or respect OS preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+            document.body.classList.add('dark-theme');
+            themeIcon.classList.remove('fa-moon');
+            themeIcon.classList.add('fa-sun');
+            themeText.textContent = 'Light Mode';
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            
+            if (document.body.classList.contains('dark-theme')) {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+                themeText.textContent = 'Light Mode';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+                themeText.textContent = 'Dark Mode';
+                localStorage.setItem('theme', 'light');
+            }
+        });
+        
+        // Función para alternar todos los checkboxes
+        function toggleAll(checkboxesClass) {
+            const checkboxes = document.querySelectorAll(`.${checkboxesClass}`);
+            const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = !allChecked;
+            });
+            updatePlot();
+        }
+        
+        // Función para actualizar el gráfico y estadísticas
+        function updatePlot() {
+            const plotContainer = document.querySelector('.plot-container');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            
+            // Mostrar overlay de carga
+            loadingOverlay.style.display = 'flex';
+            
+            // Recopilar datos del formulario
+            const formData = {
+                populations: Array.from(document.querySelectorAll('.population-checkbox:checked')).map(cb => cb.value),
+                cycles: Array.from(document.querySelectorAll('.cycle-checkbox:checked')).map(cb => cb.value),
+                groups: Array.from(document.querySelectorAll('.group-checkbox:checked')).map(cb => cb.value),
+                variable: document.querySelector('select[name="variable"]').value,
+                num_std: document.querySelector('select[name="num_std"]').value,
+                show_annotations: document.getElementById('show_annotations').checked,
+                show_correlations: document.getElementById('show_correlations').checked
+            };
+            
+            // Enviar solicitud al servidor
+            fetch('/generate_plot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Actualizar gráfico principal
+                    updateMainPlot(data.plot_url);
+                    
+                    // Actualizar estadísticas descriptivas
+                    updateStatistics(data.stats);
+                    
+                    // Actualizar análisis de correlación
+                    updateCorrelationAnalysis(data.correlations);
+                    
+                    // Actualizar análisis de tendencias
+                    updateTrendAnalysis(data.trends);
+                    
+                    // Actualizar análisis comparativo
+                    updateComparativeAnalysis(data.comparative);
+                    
+                    // Actualizar crecimiento diario
+                    updateDailyGrowth(data.daily_growth);
+                    
+                    // Actualizar pruebas de Tukey
+                    updateTukeyResults(data.tukey_results);
+                    
+                    // Actualizar gráficos adicionales
+                    updateCorrelationPlot(data.correlation_plot);
+                    updateTrendPlot(data.trend_plot);
+                    updateComparativePlot(data.comparative_plot);
+                    
+                    // Actualizar estadísticas avanzadas
+                    if (data.advanced_stats) {
+                        updateAdvancedStats(data.advanced_stats);
+                    }
+
+                    // Actualizar pruebas de hipótesis
+                    if (data.hypothesis_tests) {
+                        updateHypothesisTests(data.hypothesis_tests);
+                    }
+                } else {
+                    alert(`Error: ${data.message}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error generating plot');
+            })
+            .finally(() => {
+                // Ocultar overlay de carga
+                loadingOverlay.style.display = 'none';
+            });
+        }
+        
+        // Función para actualizar el gráfico principal
+        function updateMainPlot(plotUrl) {
+            const plotContainer = document.querySelector('.plot-container');
+            
+            // Eliminar imagen anterior si existe
+            const oldImg = plotContainer.querySelector('img');
+            if (oldImg) {
+                oldImg.remove();
+            }
+            
+            // Crear nueva imagen
+            if (plotUrl) {
+                const img = document.createElement('img');
+                img.src = `data:image/png;base64,${plotUrl}`;
+                img.alt = "Analysis Plot";
+                plotContainer.appendChild(img);
+            }
+        }
+        
+        // Función para actualizar las estadísticas descriptivas
+        function updateStatistics(stats) {
+            const container = document.getElementById('stats-container');
+            
+            if (!stats || stats.length === 0) {
+                container.innerHTML = `
+                    <div class="no-stats">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>No statistics available</h3>
+                        <p>Please select different populations, cycles, or groups to see statistics.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Crear tabla de estadísticas
+            let tableHTML = `
+                <div class="stats-title">
+                    <i class="fas fa-table"></i>
+                    Descriptive Statistics by Level
+                </div>
+                <div class="table-container">
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>Level</th>
+                                <th>Population</th>
+                                <th>Cycle</th>
+                                <th>Group</th>
+                                <th>Count</th>
+                                <th>Mean</th>
+                                <th>Std Dev</th>
+                                <th>Min</th>
+                                <th>25%</th>
+                                <th>Median</th>
+                                <th>75%</th>
+                                <th>Max</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            stats.forEach(stat => {
+                tableHTML += `
+                    <tr>
+                        <td>${stat.level}</td>
+                        <td>${stat.population}</td>
+                        <td>${stat.cycle}</td>
+                        <td>${stat.group}</td>
+                        <td>${stat.count}</td>
+                        <td>${stat.mean.toFixed(4)}</td>
+                        <td>${stat.std.toFixed(4)}</td>
+                        <td>${stat.min.toFixed(4)}</td>
+                        <td>${stat['25%'].toFixed(4)}</td>
+                        <td>${stat['50%'].toFixed(4)}</td>
+                        <td>${stat['75%'].toFixed(4)}</td>
+                        <td>${stat.max.toFixed(4)}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+                <div class="stats-summary">
+                    <strong>Summary:</strong> Showing statistics for ${stats.length} combinations
+                </div>
+            `;
+            
+            container.innerHTML = tableHTML;
+        }
+        
+        // Función para actualizar el análisis de correlación
+        function updateCorrelationAnalysis(correlations) {
+            const container = document.getElementById('correlation-container');
+            
+            if (!correlations || correlations.length === 0) {
+                container.innerHTML = `
+                    <div class="no-stats">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>No correlation data</h3>
+                        <p>Select at least two items to see correlation analysis.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Crear tabla de correlaciones
+            let tableHTML = `
+                <div class="stats-title">
+                    <i class="fas fa-link"></i>
+                    Correlation Analysis by Level
+                </div>
+                <div class="table-container">
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>Level</th>
+                                <th>Population</th>
+                                <th>Item 1</th>
+                                <th>Item 2</th>
+                                <th>Pearson</th>
+                                <th>P-value</th>
+                                <th>Spearman</th>
+                                <th>P-value</th>
+                                <th>N</th>
+                                <th>Significance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            correlations.forEach(corr => {
+                const isSignificantPearson = corr.p_value_pearson < 0.05;
+                const isSignificantSpearman = corr.p_value_spearman < 0.05;
+                const population = corr.population || '';
+                
+                tableHTML += `
+                    <tr>
+                        <td>${corr.level}</td>
+                        <td>${population}</td>
+                        <td>${corr.item1}</td>
+                        <td>${corr.item2}</td>
+                        <td>${corr.correlation_pearson.toFixed(4)}</td>
+                        <td>${corr.p_value_pearson.toFixed(6)}</td>
+                        <td>${corr.correlation_spearman.toFixed(4)}</td>
+                        <td>${corr.p_value_spearman.toFixed(6)}</td>
+                        <td>${corr.n}</td>
+                        <td>
+                            ${isSignificantPearson || isSignificantSpearman ? 'Significant' : 'Not significant'}
+                            <span class="significance-indicator ${isSignificantPearson || isSignificantSpearman ? 'significant' : 'not-significant'}"></span>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+                <div class="stats-summary">
+                    <strong>Interpretation:</strong> 
+                    Positive correlation (≥0) indicates items change in the same direction. 
+                    Negative correlation (≤0) indicates items change in opposite directions.
+                    P-value &lt; 0.05 indicates statistically significant correlation.
+                </div>
+            `;
+            
+            container.innerHTML = tableHTML;
+        }
+        
+        // Función para actualizar el análisis de tendencias
+        function updateTrendAnalysis(trends) {
+            const container = document.getElementById('trend-container');
+            
+            if (!trends || trends.length === 0) {
+                container.innerHTML = `
+                    <div class="no-stats">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>No trend data</h3>
+                        <p>Select groups to see growth trend analysis.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Crear tabla de tendencias
+            let tableHTML = `
+                <div class="stats-title">
+                    <i class="fas fa-chart-line"></i>
+                    Growth Trends
+                </div>
+                <div class="table-container">
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>Population</th>
+                                <th>Cycle</th>
+                                <th>Group</th>
+                                <th>Slope</th>
+                                <th>Intercept</th>
+                                <th>R²</th>
+                                <th>P-value</th>
+                                <th>Trend Strength</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            trends.forEach(trend => {
+                const trendClass = trend.trend_strength.toLowerCase();
+                
+                tableHTML += `
+                    <tr>
+                        <td>${trend.population}</td>
+                        <td>${trend.cycle}</td>
+                        <td>${trend.group}</td>
+                        <td>${trend.slope.toFixed(6)}</td>
+                        <td>${trend.intercept.toFixed(4)}</td>
+                        <td>${trend.r_squared.toFixed(4)}</td>
+                        <td>${trend.p_value.toFixed(6)}</td>
+                        <td>
+                            <span class="trend-badge ${trendClass}-trend">
+                                ${trend.trend_strength}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+                <div class="stats-summary">
+                    <strong>Interpretation:</strong> 
+                    Slope indicates growth rate (positive = increasing, negative = decreasing). 
+                    R² measures how well the trend line fits the data (0-1, higher is better).
+                </div>
+            `;
+            
+            container.innerHTML = tableHTML;
+        }
+        
+        // Función para actualizar el análisis comparativo
+        function updateComparativeAnalysis(comparative) {
+            const container = document.getElementById('comparative-container');
+            
+            if (!comparative || comparative.length === 0) {
+                container.innerHTML = `
+                    <div class="no-stats">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>No comparative data</h3>
+                        <p>Select at least two items to see comparative analysis.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Crear tabla comparativa
+            let tableHTML = `
+                <div class="stats-title">
+                    <i class="fas fa-exchange-alt"></i>
+                    Comparative Analysis at Last Data Point
+                </div>
+                <div class="table-container">
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>Comparison Type</th>
+                                <th>Population</th>
+                                <th>Items</th>
+                                <th>Max Item</th>
+                                <th>Max Value</th>
+                                <th>Min Item</th>
+                                <th>Min Value</th>
+                                <th>Difference %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            comparative.forEach(comp => {
+                const population = comp.population || '';
+                
+                tableHTML += `
+                    <tr>
+                        <td>${comp.type}</td>
+                        <td>${population}</td>
+                        <td>${comp.items}</td>
+                        <td>${comp.max_item}</td>
+                        <td>${comp.max_value.toFixed(4)}</td>
+                        <td>${comp.min_item}</td>
+                        <td>${comp.min_value.toFixed(4)}</td>
+                        <td>${comp.diff_percent.toFixed(2)}%</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+                <div class="stats-summary">
+                    <strong>Interpretation:</strong> 
+                    Shows the maximum and minimum values at the last data point for each comparison type.
+                    Difference % = (Max - Min) / Min * 100.
+                </div>
+            `;
+            
+            container.innerHTML = tableHTML;
+        }
+        
+        // Función para actualizar el crecimiento diario
+        function updateDailyGrowth(dailyGrowth) {
+            const container = document.getElementById('daily-growth-container');
+            
+            if (!dailyGrowth || dailyGrowth.length === 0) {
+                container.innerHTML = `
+                    <div class="no-stats">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>No daily growth data</h3>
+                        <p>Select groups to see daily growth analysis.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Crear tabla de crecimiento diario
+            let tableHTML = `
+                <div class="stats-title">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Daily Growth Analysis
+                </div>
+                <div class="table-container">
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>Population</th>
+                                <th>Cycle</th>
+                                <th>Group</th>
+                                <th>Avg Daily Growth</th>
+                                <th>Max Daily Growth</th>
+                                <th>Min Daily Growth</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            dailyGrowth.forEach(growth => {
+                // Clasificar crecimiento
+                let growthClass = 'low-growth';
+                if (growth.avg_daily_growth > 0.5) growthClass = 'high-growth';
+                else if (growth.avg_daily_growth > 0.2) growthClass = 'medium-growth';
+                
+                tableHTML += `
+                    <tr>
+                        <td>${growth.population}</td>
+                        <td>${growth.cycle}</td>
+                        <td>${growth.group}</td>
+                        <td>
+                            <span class="growth-indicator ${growthClass}">
+                                ${growth.avg_daily_growth.toFixed(4)}
+                            </span>
+                        </td>
+                        <td>${growth.max_daily_growth.toFixed(4)}</td>
+                        <td>${growth.min_daily_growth.toFixed(4)}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+                <div class="stats-summary">
+                    <strong>Interpretation:</strong> 
+                    Average daily growth indicates the mean growth per day over the selected period.
+                    Growth classification: &lt;0.2 = Low, 0.2-0.5 = Medium, &gt;0.5 = High.
+                </div>
+            `;
+            
+            container.innerHTML = tableHTML;
+        }
+        
+        // Función para actualizar los resultados de Tukey
+        function updateTukeyResults(tukeyResults) {
+            const container = document.getElementById('tukey-container');
+            
+            if (!tukeyResults || tukeyResults.length === 0) {
+                container.innerHTML = `
+                    <div class="no-stats">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>No significant differences found</h3>
+                        <p>Tukey HSD tests found no statistically significant differences.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div class="stats-title">
+                    <i class="fas fa-calculator"></i>
+                    Post-hoc Analysis (Tukey HSD)
+                </div>
+            `;
+            
+            tukeyResults.forEach(result => {
+                html += `
+                    <div class="tukey-results">${result.tukey_summary}</div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // Función para actualizar pruebas de hipótesis
+        function updateHypothesisTests(hypothesisTests) {
+            const container = document.getElementById('hypothesis-container');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            if (!hypothesisTests || hypothesisTests.length === 0) {
+                container.innerHTML = `
+                    <div class="no-stats">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>No hypothesis tests</h3>
+                        <p>Select groups to see hypothesis testing results.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div class="stats-title">
+                    <i class="fas fa-vial"></i>
+                    Hypothesis Testing Results
+                </div>
+                <div class="table-container">
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>Factor</th>
+                                <th>Metric</th>
+                                <th>Test</th>
+                                <th>F-value</th>
+                                <th>P-value</th>
+                                <th>Significance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            hypothesisTests.forEach(test => {
+                const isSignificant = test.p_value < 0.05;
+                html += `
+                    <tr>
+                        <td>${test.factor}</td>
+                        <td>${test.metric}</td>
+                        <td>${test.test}</td>
+                        <td>${test.f_value.toFixed(4)}</td>
+                        <td>${test.p_value.toFixed(6)}</td>
+                        <td>
+                            ${isSignificant ? 'Significant' : 'Not significant'}
+                            <span class="significance-indicator ${isSignificant ? 'significant' : 'not-significant'}"></span>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+                <div class="stats-summary">
+                    <strong>Interpretation:</strong> 
+                    Shows results of hypothesis tests comparing different groups.
+                    P-value &lt; 0.05 indicates statistically significant difference.
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        // Función para actualizar el gráfico de correlación
+        function updateCorrelationPlot(plotUrl) {
+            const container = document.getElementById('correlation-plot-container');
+            
+            // Limpiar contenedor
+            container.innerHTML = '';
+            
+            if (!plotUrl) {
+                container.innerHTML = `
+                    <div class="no-stats">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>No correlation plot available</h3>
+                        <p>Select groups to generate a correlation matrix.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Crear imagen
+            const img = document.createElement('img');
+            img.src = `data:image/png;base64,${plotUrl}`;
+            img.alt = "Correlation Plot";
+            container.appendChild(img);
+        }
+        
+        // Función para actualizar el gráfico de tendencias
+        function updateTrendPlot(plotUrl) {
+            const container = document.getElementById('trend-plot-container');
+            
+            // Limpiar contenedor
+            container.innerHTML = '';
+            
+            if (!plotUrl) {
+                container.innerHTML = `
+                    <div class="no-stats">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>No trend plot available</h3>
+                        <p>Select groups to visualize growth trends.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Crear imagen
+            const img = document.createElement('img');
+            img.src = `data:image/png;base64,${plotUrl}`;
+            img.alt = "Trend Plot";
+            container.appendChild(img);
+        }
+        
+        // Función para actualizar el gráfico comparativo
+        function updateComparativePlot(plotUrl) {
+            const container = document.getElementById('comparative-plot-container');
+            
+            // Limpiar contenedor
+            container.innerHTML = '';
+            
+            if (!plotUrl) {
+                container.innerHTML = `
+                    <div class="no-stats">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>No comparative plot available</h3>
+                        <p>Select groups to generate comparative visualizations.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Crear imagen
+            const img = document.createElement('img');
+            img.src = `data:image/png;base64,${plotUrl}`;
+            img.alt = "Comparative Plot";
+            container.appendChild(img);
+        }
+        
+        // Función para actualizar estadísticas avanzadas
+        function updateAdvancedStats(advancedStats) {
+            const container = document.getElementById('advanced-stats-container');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            if (!advancedStats || Object.keys(advancedStats).length === 0) {
+                container.innerHTML = `
+                    <div class="no-stats">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>No advanced analysis</h3>
+                        <p>Select groups to see advanced statistical analysis.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div class="stats-title">
+                    <i class="fas fa-brain"></i>
+                    Advanced Statistical Analysis
+                </div>
+            `;
+            
+            // Correlaciones avanzadas
+            if (advancedStats.correlations && advancedStats.correlations.length > 0) {
+                html += `
+                    <div class="stats-title">
+                        <i class="fas fa-link"></i>
+                        Advanced Correlations
+                    </div>
+                    <div class="table-container">
+                        <table class="stats-table">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Metric 1</th>
+                                    <th>Metric 2</th>
+                                    <th>Correlation</th>
+                                    <th>P-value</th>
+                                    <th>Significance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                advancedStats.correlations.forEach(corr => {
+                    const isSignificant = corr.p_value < 0.05;
+                    html += `
+                        <tr>
+                            <td>${corr.type}</td>
+                            <td>${corr.metric1}</td>
+                            <td>${corr.metric2}</td>
+                            <td>${corr.correlation.toFixed(4)}</td>
+                            <td>${corr.p_value.toFixed(6)}</td>
+                            <td>
+                                ${isSignificant ? 'Significant' : 'Not significant'}
+                                <span class="significance-indicator ${isSignificant ? 'significant' : 'not-significant'}"></span>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+            
+            // Análisis de clustering
+            if (advancedStats.cluster_analysis && advancedStats.cluster_analysis.plot) {
+                html += `
+                    <div class="stats-title">
+                        <i class="fas fa-sitemap"></i>
+                        Cluster Analysis
+                    </div>
+                    <div class="analysis-plot">
+                        <img src="data:image/png;base64,${advancedStats.cluster_analysis.plot}" alt="Cluster Analysis">
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        // Función para generar el reporte PDF
+        function generatePDFReport() {
+            // Recopilar datos del formulario
+            const formData = {
+                populations: Array.from(document.querySelectorAll('.population-checkbox:checked')).map(cb => cb.value),
+                cycles: Array.from(document.querySelectorAll('.cycle-checkbox:checked')).map(cb => cb.value),
+                groups: Array.from(document.querySelectorAll('.group-checkbox:checked')).map(cb => cb.value),
+                variable: document.querySelector('select[name="variable"]').value,
+                num_std: document.querySelector('select[name="num_std"]').value,
+                show_annotations: document.getElementById('show_annotations').checked,
+                show_correlations: document.getElementById('show_correlations').checked
+            };
+            
+            // Mostrar overlay de carga
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.style.display = 'flex';
+            
+            // Enviar solicitud al servidor
+            fetch('/generate_pdf_report', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.blob();
+                }
+                throw new Error('Network response was not ok.');
+            })
+            .then(blob => {
+                // Crear un enlace para descargar el PDF
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'growth_analysis_report.pdf';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error('Error downloading report:', error);
+                alert('Error downloading report: ' + error.message);
+            })
+            .finally(() => {
+                // Ocultar overlay de carga
+                loadingOverlay.style.display = 'none';
+            });
+        }
+        
+        // Configurar event listeners al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configurar listeners para controles
+            document.querySelectorAll('.population-checkbox, .cycle-checkbox, .group-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', updatePlot);
+            });
+            
+            document.querySelector('select[name="variable"]').addEventListener('change', updatePlot);
+            document.querySelector('select[name="num_std"]').addEventListener('change', updatePlot);
+            document.getElementById('show_annotations').addEventListener('change', updatePlot);
+            document.getElementById('show_correlations').addEventListener('change', updatePlot);
+            
+            // Generar gráfico inicial
+            updatePlot();
+        });
+    </script>
+</body>
+</html>
